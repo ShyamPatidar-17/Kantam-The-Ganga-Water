@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-primary: #042f2e;   /* Deepest Teal */
+  --color-brand-accent: #22d3ee;    /* Ganga Cyan */
+  --color-brand-spiritual: #f59e0b; /* Temple Gold */
+  --color-brand-surface: #f8fafc;   
+  
+  --radius-brand: 2.5rem;
+  
+  --font-heading: "Playfair Display", serif;
+  --font-body: "Inter", sans-serif;
+}
+
+/* Smooth Scrolling */
+html {
+  scroll-behavior: smooth;
+}
