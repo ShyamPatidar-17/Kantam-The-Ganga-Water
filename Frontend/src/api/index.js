@@ -3,7 +3,7 @@ import axios from 'axios';
 // 1. Create Axios Instance
 // Note: Ensure your .env file has VITE_BACKEND_URL=http://localhost:5000
 const API = axios.create({ 
-    baseURL: `${import.meta.env.VITE_BACKEND_URL}/api` 
+    baseURL: `${import.meta.env.VITE_BACKEND_URL}` 
 });
 
 // 2. Request Interceptor: Attach JWT Token to every request
