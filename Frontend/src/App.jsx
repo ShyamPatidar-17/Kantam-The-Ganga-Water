@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { Toaster } from 'react-hot-toast';
 
 // Context
-import { CartProvider } from './context/cartContext';
+import { CartProvider } from './context/CartContext';
 
 // Components
 import Navbar from './components/Navbar';
