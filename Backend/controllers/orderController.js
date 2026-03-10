@@ -93,39 +93,48 @@ export const placeOrder = async (req, res) => {
 // ! ||--------------------------------------------------------------------------------||
 export const getMyOrders = async (req, res) => {
   try {
-    // User Role: Only sees their own
-    if (req.user.role === "User") {
-      const orders = await Order.find({ userId: req.user._id }).populate(
-        "items.bottleId",
-      );
+    // 1. ADMIN: Sees every single order in the system
+    if (req.user.role === "Admin") {
+      const orders = await Order.find({})
+        .populate("userId")
+        .populate("items.bottleId");
       return res.status(200).json(orders);
     }
 
-    // Seller/Admin Role: Needs full User details
-    if (req.user.role === "Seller" || req.user.role === "Admin") {
-      const sellerProducts = await Bottle.find({
-        sellerId: req.user._id,
-      }).select("_id");
+    // 2. SELLER: Sees only orders containing their products
+    if (req.user.role === "Seller") {
+      const sellerProducts = await Bottle.find({ sellerId: req.user._id }).select("_id");
       const productIds = sellerProducts.map((p) => p._id);
 
-      // Added .populate('userId') here
       const orders = await Order.find({
         "items.bottleId": { $in: productIds },
       })
-        .populate("userId") // <--- This provides name, email, etc.
+        .populate("userId")
         .populate("items.bottleId");
 
       const filteredOrders = orders.map((order) => {
         const doc = order.toObject();
         doc.items = doc.items.filter((item) =>
-          productIds.some((id) => id.equals(item.bottleId._id)),
+          productIds.some((id) => id.equals(item.bottleId?._id))
         );
         return doc;
       });
 
       return res.status(200).json(filteredOrders);
     }
+
+    // 3. USER: Sees only their own orders
+    if (req.user.role === "User") {
+      const orders = await Order.find({ userId: req.user._id })
+        .populate("items.bottleId");
+      return res.status(200).json(orders);
+    }
+
+    // 4. FALLBACK: If role is undefined or unrecognized
+    return res.status(403).json({ message: "Unauthorized: Role not recognized" });
+
   } catch (error) {
+    console.error("Get Orders Error:", error);
     res.status(500).json({ message: error.message });
   }
 };

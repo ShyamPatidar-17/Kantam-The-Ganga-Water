@@ -4,7 +4,7 @@ import ltr2 from '../assets/ltr2.jpeg'
 import ltr25 from '../assets/ltr25.jpeg'
 import ltr50 from '../assets/ltr50.jpeg'
 import banner from '../assets/banner.jpg'
-import logo from '../assets/logo.png'
+import logo from '../assets/logo.jpeg'
 
 
 const images ={
