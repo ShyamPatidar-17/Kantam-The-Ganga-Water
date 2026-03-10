@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { fetchProductsBySeller, deleteProduct } from '../api'; // Ensure deleteProduct is imported
 import { Package, Trash2, Edit3, Plus, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+
+import { fetchProductsBySeller, deleteProduct } from '../api';
 
 export default function SellerProducts() {
     const { id } = useParams(); 

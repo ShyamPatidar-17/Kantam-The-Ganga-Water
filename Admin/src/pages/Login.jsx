@@ -1,17 +1,16 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { Link } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
-import { Mail, Phone } from 'lucide-react'; // Icons for better visual cues
-import { API_URL } from '../App';
+import { Mail, Phone } from 'lucide-react';
+
+import {login} from '../api/index'; 
 
 const Login = () => {
-  const navigate = useNavigate();
-  const [loginMethod, setLoginMethod] = useState('email'); // State to track 'email' vs 'mobile'
+  const [loginMethod, setLoginMethod] = useState('email'); 
   const [formData, setFormData] = useState({
     identifier: '',
     password: '',
-    role:'Admin'
+    role: 'Admin'
   });
 
   const handleChange = (e) => {
@@ -23,20 +22,22 @@ const Login = () => {
     const loadingToast = toast.loading('Authenticating...');
 
     try {
-      const response = await axios.post(`${API_URL}/auth/login`, formData);
+      
+      const { data } = await login(formData);
 
-      if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('user', JSON.stringify(response.data));
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data));
         
-        toast.success(`Welcome back, ${response.data.name}!`, { id: loadingToast });
+        toast.success(`Welcome back, ${data.name || 'Admin'}!`, { id: loadingToast });
         
+       
         setTimeout(() => {
             window.location.href = "/"; 
-        }, 1500);
+        }, 1200);
       }
     } catch (error) {
-      const errorMsg = error.response?.data?.message || 'Login failed';
+      const errorMsg = error.response?.data?.message || 'Authentication failed';
       toast.error(errorMsg, { id: loadingToast });
     }
   };
@@ -47,8 +48,12 @@ const Login = () => {
       <div className="bg-white p-10 rounded-[2.5rem] shadow-2xl w-full max-w-md border border-slate-100">
         
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-black tracking-tighter text-slate-900">KANTAM<span className="text-blue-600">.</span></h1>
-          <p className="text-slate-400 mt-2 font-medium uppercase tracking-widest text-[10px]">Secure Admin Access</p>
+          <h1 className="text-4xl font-black tracking-tighter text-slate-900">
+            KANTAM<span className="text-blue-600">.</span>
+          </h1>
+          <p className="text-slate-400 mt-2 font-medium uppercase tracking-widest text-[10px]">
+            Secure Admin Access
+          </p>
         </div>
 
         {/* --- LOGIN METHOD SELECTOR --- */}
@@ -81,7 +86,7 @@ const Login = () => {
               onChange={handleChange}
               type={loginMethod === 'email' ? 'email' : 'tel'} 
               placeholder={loginMethod === 'email' ? 'admin@kantam.com' : '9876543210'} 
-              className="w-full mt-1 p-4 bg-slate-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm" 
+              className="w-full mt-1 p-4 bg-slate-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm font-bold text-slate-700" 
             />
           </div>
 
@@ -93,18 +98,18 @@ const Login = () => {
               onChange={handleChange}
               type="password" 
               placeholder="••••••••" 
-              className="w-full mt-1 p-4 bg-slate-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm" 
+              className="w-full mt-1 p-4 bg-slate-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm font-bold text-slate-700" 
             />
           </div>
 
-          <button type="submit" className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold hover:bg-blue-600 transition-all shadow-xl uppercase tracking-widest text-sm">
+          <button type="submit" className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black hover:bg-blue-600 transition-all shadow-xl uppercase tracking-widest text-xs active:scale-95">
             Sign In
           </button>
         </form>
 
-        <p className="mt-10 text-center text-xs font-bold text-slate-300 uppercase tracking-widest">
+        <p className="mt-10 text-center text-[10px] font-black text-slate-300 uppercase tracking-widest">
           New to the portal? 
-          <Link to="/signup" className="text-blue-600 ml-2 hover:underline">Register</Link>
+          <Link to="/signup" className="text-blue-600 ml-2 hover:underline">Register Account</Link>
         </p>
       </div>
     </div>

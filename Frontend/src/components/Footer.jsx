@@ -1,76 +1,87 @@
 import React from 'react';
-import { Instagram, Mail, Phone, Droplets, ArrowUpRight, ShieldCheck } from 'lucide-react';
+import { Instagram, Mail, Phone, Droplets, ExternalLink, Code2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Footer = () => {
-  const user = JSON.parse(localStorage.getItem('user'));
+  const user = JSON.parse(localStorage.getItem('User'));
   const isAdmin = user?.role === 'Admin' || user?.role === 'Seller';
 
   return (
-    // Reduced top padding from pt-20 to pt-12 and mt-20 to mt-12
-    <footer className="bg-brand-primary text-white pt-12 pb-6 px-6 mt-12 rounded-[3rem_3rem_0_0]">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 border-b border-white/5 pb-10">
+    <footer className="bg-slate-900 text-white pt-12 pb-8 px-6 mt-0 w-full mt-5">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-8 border-b border-white/5 pb-10">
         
-        {/* Brand Identity */}
-        <div className="flex flex-col justify-center">
-          <div className="flex items-center gap-2 mb-4">
-            <Droplets className="text-brand-accent" size={24} />
-            <span className="text-xl font-black tracking-widest">KANTAM</span>
-          </div>
-          <p className="text-white/40 font-light text-sm leading-relaxed max-w-xs">
-            Preserving the sacred essence of the Ganga, delivered in its purest form to you.
-          </p>
+        {/* --- Brand Identity --- */}
+        <div className="flex flex-col leading-none group">
+          <Link to="/" className="flex items-center gap-2 mb-2">
+            <Droplets className="text-brand-accent group-hover:animate-pulse" size={20} />
+            <span className="text-xl font-black tracking-tighter">KANTAM</span>
+          </Link>
+          <span className="text-[8px] font-bold uppercase tracking-[0.3em] text-brand-accent/60 ml-7">
+            The Ganga Water
+          </span>
         </div>
 
-        {/* Navigation */}
-        <div>
-          <h5 className="font-black mb-4 text-brand-accent uppercase tracking-[0.3em] text-[9px]">Explore</h5>
-          <ul className="grid grid-cols-2 gap-y-2 gap-x-4 text-white/50 text-xs font-medium">
-            <li><Link to="/collection" className="hover:text-brand-accent transition-colors">Collection</Link></li>
-            <li><Link to="/about" className="hover:text-brand-accent transition-colors">Our Story</Link></li>
-            <li><Link to="/orders" className="hover:text-brand-accent transition-colors">Orders</Link></li>
-            {isAdmin && (
-              <li>
-                <Link to="/admin/orders" className="text-brand-accent hover:brightness-125 transition-all">
-                  Admin
-                </Link>
-              </li>
-            )}
-          </ul>
+        {/* --- Quick Navigation --- */}
+        <div className="flex flex-wrap gap-x-8 gap-y-2 text-[10px] font-black uppercase tracking-widest text-white/40">
+          <Link to="/collection" className="hover:text-brand-accent transition-colors">Collection</Link>
+          <Link to="/about" className="hover:text-brand-accent transition-colors">Story</Link>
+          <Link to="/orders" className="hover:text-brand-accent transition-colors">Orders</Link>
+          {isAdmin && (
+            <Link to="/admin/orders" className="text-brand-accent flex items-center gap-1 hover:brightness-125">
+              Admin <ExternalLink size={10} />
+            </Link>
+          )}
         </div>
 
-        {/* Contact & Social - Made more compact */}
-        <div className="flex flex-col justify-center gap-3">
-          <div className="flex gap-4">
-            <a href="https://www.instagram.com/kantam_the_ganga_premium_water" target="_blank" rel="noopener noreferrer" className="p-2 bg-white/5 rounded-lg hover:bg-brand-accent hover:text-brand-primary transition-all">
-              <Instagram size={18} />
-            </a>
-            <a href="mailto:Kantamthegangawater01@gmail.com" className="p-2 bg-white/5 rounded-lg hover:bg-brand-accent hover:text-brand-primary transition-all">
-              <Mail size={18} />
-            </a>
-            <a href="tel:6265859281" className="p-2 bg-white/5 rounded-lg hover:bg-brand-accent hover:text-brand-primary transition-all">
-              <Phone size={18} />
-            </a>
-          </div>
-          <p className="text-[10px] text-white/30 font-bold tracking-widest">CONNECT AT SOURCE</p>
+        {/* --- Social Actions --- */}
+        <div className="flex items-center gap-3">
+          <SocialLink href="https://www.instagram.com/kantam_the_ganga_premium_water" icon={<Instagram size={16} />} />
+          <SocialLink href="mailto:Kantamthegangawater01@gmail.com" icon={<Mail size={16} />} />
+          <SocialLink href="tel:6265859281" icon={<Phone size={16} />} />
         </div>
       </div>
 
-      {/* Bottom Bar - Reduced padding from pt-10 to pt-6 */}
-      <div className="max-w-7xl mx-auto pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
-        <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em]">
-         © 2026 KANTAM PREMIUM WATER. ALL RIGHTS RESERVED.
+      {/* --- Highlighted Developer Credits --- */}
+      <div className="max-w-7xl mx-auto pt-8 flex flex-col md:flex-row justify-between items-center gap-6">
+        <p className="text-[8px] font-bold uppercase tracking-[0.4em] text-white/20">
+          © 2026 KANTAM PREMIUM WATER. RADHE RADHE.
         </p>
         
-        <div className="flex items-center gap-2 text-[9px] font-bold text-white/40 uppercase tracking-widest">
-          <span>Designed & Developed by:</span>
-          <a href="mailto:shyampatidar916@gmail.com" className="text-brand-accent hover:text-white border-b border-brand-accent/30">
-            Shyam Patidar
-          </a>
+        {/* SHYAM PATIDAR HIGHLIGHTED BLOCK */}
+        <div className="relative group">
+          <div className="absolute -inset-1 bg-gradient-to-r from-brand-accent to-blue-600 rounded-lg blur opacity-20 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+          <div className="relative flex flex-wrap justify-center items-center gap-x-6 gap-y-3 bg-slate-800/50 px-6 py-3 rounded-xl border border-white/5 backdrop-blur-sm">
+            <div className="flex items-center gap-2">
+              <Code2 size={14} className="text-brand-accent" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-white">
+                Architected by <span className="text-brand-accent brightness-125 underline decoration-brand-accent/30 underline-offset-4">Shyam Patidar</span>
+              </span>
+            </div>
+            
+            <div className="flex items-center gap-5">
+              <a href="mailto:shyampatidar916@gmail.com" className="text-[9px] font-bold text-white/70 hover:text-brand-accent transition-all flex items-center gap-1.5 uppercase tracking-widest">
+                <Mail size={12} className="text-brand-accent" /> Email
+              </a>
+              <a href="tel:7354727368" className="text-[9px] font-bold text-white/70 hover:text-brand-accent transition-all flex items-center gap-1.5 uppercase tracking-widest">
+                <Phone size={12} className="text-brand-accent" /> +91 73547 27368
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </footer>
   );
 };
+
+const SocialLink = ({ href, icon }) => (
+  <a 
+    href={href} 
+    target="_blank" 
+    rel="noopener noreferrer" 
+    className="w-9 h-9 flex items-center justify-center bg-white/5 rounded-full border border-white/5 hover:bg-brand-accent hover:text-slate-900 hover:border-brand-accent transition-all duration-300"
+  >
+    {icon}
+  </a>
+);
 
 export default Footer;

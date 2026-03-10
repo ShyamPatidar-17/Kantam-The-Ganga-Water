@@ -103,7 +103,7 @@ const About = () => (
           </div>
           <div className="flex items-center gap-3">
             <Mail className="text-brand-accent" size={20} />
-            <span className="font-medium text-brand-primary">support@kantamganga.com</span>
+            <span className="font-medium text-brand-primary">kantamthegangawater01@gmail.com</span>
           </div>
         </div>
       </div>

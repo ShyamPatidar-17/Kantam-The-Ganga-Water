@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { fetchAllUsers, deleteUser } from '../api';
 import { Mail, Phone, Search, ShieldCheck, ShoppingBag, User as UserIcon, X, Trash2, UserCircle, Hash } from 'lucide-react';
 import toast from 'react-hot-toast';
+
+import { fetchAllUsers, deleteUser } from '../api';
 
 export default function Users() {
     const [users, setUsers] = useState([]);

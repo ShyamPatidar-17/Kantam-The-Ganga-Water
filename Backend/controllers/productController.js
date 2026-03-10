@@ -1,13 +1,27 @@
 import Bottle from '../models/Bottle.js';
+import User from '../models/User.js';
 import { v2 as cloudinary } from 'cloudinary';
 
-// 1. ADD Product (Create)
+// ! ||--------------------------------------------------------------------------------||
+// ! ||                              1. ADD Product (Create)                           ||
+// ! ||--------------------------------------------------------------------------------||
 export const addProduct = async (req, res) => {
     try {
         const { name, sellerId, size, price, stock, description } = req.body;
-        
-        // req.files is populated by your Cloudinary storage engine
-        // 'path' in Cloudinary storage refers to the full HTTPS URL
+
+        // 1. Fetch Seller details to get their address
+        const seller = await User.findById(sellerId);
+        if (!seller) {
+            return res.status(404).json({ success: false, message: "Seller not found" });
+        }
+
+        const sellerAddress = seller.address 
+            ? `${seller.address.street}, ${seller.address.city}, ${seller.address.state}`
+            : "Location not specified";
+
+
+        const finalDescription = `${description}\n\n[Source Location: ${sellerAddress}]`;
+
         const imageUrls = req.files ? req.files.map(file => file.path) : [];
 
         const newBottle = new Bottle({
@@ -15,9 +29,9 @@ export const addProduct = async (req, res) => {
             sellerId,
             size,
             price,
-            images: imageUrls, // Storing full URLs like https://res.cloudinary.com/...
+            images: imageUrls,
             stock,
-            description
+            description: finalDescription 
         });
 
         const savedBottle = await newBottle.save();
@@ -27,7 +41,10 @@ export const addProduct = async (req, res) => {
     }
 };
 
-// 2. VIEW Products (Remains largely the same)
+
+// ! ||--------------------------------------------------------------------------------||
+// ! ||                    2. VIEW Products (Remains largely the same)                 ||
+// ! ||--------------------------------------------------------------------------------||
 export const getProducts = async (req, res) => {
     try {
         const { id } = req.query; 
@@ -44,11 +61,14 @@ export const getProducts = async (req, res) => {
 };
 
 
+// ! ||--------------------------------------------------------------------------------||
+// ! ||                          3. GET Particular Bottel Detail                       ||
+// ! ||--------------------------------------------------------------------------------||
 export const getParticularProduct=async(req,res)=>{
     try{
         const { id } = req.params;
-        const bottle = await Bottle.findById(id);
-        console.log(bottle)
+        const bottle = await Bottle.findById(id).populate('sellerId', 'fullName email phone');;
+       
         if (!bottle) return res.status(404).json({ message: "Product not found" });
          res.status(200).json(bottle);
     }
@@ -57,8 +77,9 @@ export const getParticularProduct=async(req,res)=>{
     } 
 };
 
-// 3. UPDATE Product
-
+// ! ||--------------------------------------------------------------------------------||
+// ! ||                                 4. UPDATE Product                              ||
+// ! ||--------------------------------------------------------------------------------||
 export const updateProduct = async (req, res) => {
     try {
         const { id } = req.params;
@@ -104,7 +125,9 @@ export const updateProduct = async (req, res) => {
     }
 };
 
-// 4. DELETE Product
+// ! ||--------------------------------------------------------------------------------||
+// ! ||                                 5. DELETE Product                              ||
+// ! ||--------------------------------------------------------------------------------||
 export const deleteProduct = async (req, res) => {
     try {
         const { id } = req.params;

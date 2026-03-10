@@ -1,10 +1,13 @@
-// User controller logic
-
+// ! ||--------------------------------------------------------------------------------||
+// ! ||                             User controller logic                              ||
+// ! ||--------------------------------------------------------------------------------||
 
 import User from '../models/User.js';
 
-// @desc    Get all users (Admin only typically)
-// @route   GET /api/users
+
+// ! ||--------------------------------------------------------------------------------||
+// ! ||                       1. Get All Users (Admin Dashboard)                       ||
+// ! ||--------------------------------------------------------------------------------||
 export const getAllUsers = async (req, res) => {
     try {
         const users = await User.find({}).select('-password');
@@ -14,13 +17,12 @@ export const getAllUsers = async (req, res) => {
     }
 };
 
-// @desc    Get logged in user profile
-// @route   GET /api/users/profile
+// ! ||--------------------------------------------------------------------------------||
+// ! ||                     2. Get User Profile (Both Admin and User)                  ||
+// ! ||--------------------------------------------------------------------------------||
 export const getUserProfile = async (req, res) => {
-    try {
-        // req.user is usually set by an auth middleware (see below)
+    try {  
         const user = await User.findById(req.user._id).select('-password');
-
         if (user) {
             res.json(user);
         } else {
@@ -31,6 +33,48 @@ export const getUserProfile = async (req, res) => {
     }
 };
 
+// ! ||--------------------------------------------------------------------------------||
+// ! ||                              3. Update the Profile                             ||
+// ! ||--------------------------------------------------------------------------------||
+export const updateProfile = async (req, res) => {
+    try {
+        const { fullName, phone, address } = req.body;
+
+        const updatedUser = await User.findByIdAndUpdate(
+            req.user._id,
+            {
+                $set: {
+                    fullName,
+                    phone,
+                    address: {
+                        street: address?.street || "",
+                        city: address?.city || "",
+                        state: address?.state || "",
+                        zip: address?.zip || "",
+                        country: address?.country || "India" // Matches Schema default
+                    }
+                }
+            },
+            { new: true, runValidators: true }
+        ).select("-password");
+
+        if (!updatedUser) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        res.status(200).json({ 
+            success: true, 
+            message: "Profile synchronized with database", 
+            user: updatedUser 
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// ! ||--------------------------------------------------------------------------------||
+// ! ||                            4. Delete User (Admin Only)                         ||
+// ! ||--------------------------------------------------------------------------------||
 export const deleteUser = async (req, res) => {
     try {
         const user = await User.findById(req.params.id);

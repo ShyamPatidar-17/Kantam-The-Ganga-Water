@@ -8,8 +8,13 @@ import authRoutes from './routes/authRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import userRoutes from './routes/userRoutes.js'
+import connectDB from './config/db.js';
+
+
 
 dotenv.config();
+
+const PORT = process.env.PORT || 5000;
 
 const app = express();
 
@@ -22,7 +27,7 @@ const allowedOrigins = [
 ];
 
 app.use(cors({
-    origin: allowedOrigins, // Express-cors handles the array automatically
+    origin: allowedOrigins, 
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
@@ -38,15 +43,10 @@ app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/users',userRoutes)
 
-// Database Connection
-const PORT = process.env.PORT || 5000;
-const MONGO_URI = process.env.MONGODB_URI; // Matches your .env variable name
 
-mongoose.connect(MONGO_URI)
-    .then(() => {
-        console.log('✅ Connected to MongoDB Atlas');
-        app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
-    })
-    .catch((err) => {
-        console.error('❌ Database connection error:', err.message);
-    });
+
+
+// Database Connection
+connectDB();
+
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

@@ -1,7 +1,14 @@
+// ! ||--------------------------------------------------------------------------------||
+// ! ||                                  Order Schema                                  ||
+// ! ||--------------------------------------------------------------------------------||
 import mongoose from 'mongoose';
 
 const orderSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  
+  // Added to capture the customer's name at the moment of order
+  fullName: { type: String, required: true }, 
+
   items: [{
     bottleId: { type: mongoose.Schema.Types.ObjectId, ref: 'Bottle', required: true },
     quantity: { type: Number, required: true, min: 1 },
@@ -17,12 +24,10 @@ const orderSchema = new mongoose.Schema({
   },
   totalAmount: { type: Number, required: true },
   paymentMethod: { type: String, default: 'COD' }, 
-  status: { type: String, enum: ['Pending', 'Processing', 'Delivered'], default: 'Pending' },
+  status: { type: String, enum: ['Pending', 'Processing', 'Delivered','Cancelled','Shipped'], default: 'Pending' },
   paymentStatus: { type: String, enum: ['Unpaid', 'Paid'], default: 'Unpaid' }
 }, { timestamps: true });
 
-// --- THE MISSING PART ---
-// This turns the schema into a "Model" that can be imported elsewhere
 const Order = mongoose.model('Order', orderSchema);
 
 export default Order;

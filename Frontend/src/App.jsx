@@ -20,9 +20,8 @@ import Orders from './pages/Orders';
 import About from './pages/About';
 import ProductDetails from './pages/ProductDetails';
 import Collection from './pages/Collection';
+import ForgotPassword from './pages/ForgotPassword';
 
-
-export const API_URL = import.meta.env.VITE_BACKEND_URL;
 
 // Helper to reset scroll on route change
 const ScrollToTop = () => {
@@ -38,7 +37,7 @@ const LayoutWrapper = ({ children }) => {
   const location = useLocation();
   
   // Define paths where Navbar and Footer should be HIDDEN
-  const hideLayout = ['/login', '/signup', '/seller/login'].includes(location.pathname);
+  const hideLayout = ['/login', '/signup', '/seller/login','/forgot'].includes(location.pathname);
 
   return (
     <>
@@ -55,7 +54,23 @@ function App() {
   return (
     <CartProvider>
       <Router>
-        <Toaster position="bottom-right" reverseOrder={false} />
+       <Toaster 
+  position="top-center" 
+  reverseOrder={false} 
+  toastOptions={{
+    // Duration in milliseconds (1000ms = 1 sec)
+    duration: 3000, 
+    style: {
+      fontSize: '12px',
+      fontWeight: 'bold',
+      textTransform: 'uppercase',
+      letterSpacing: '1px',
+      borderRadius: '12px',
+      background: '#1bc30b', // Kantam Slate Blue
+      color: '#060606',
+    },
+  }}
+/>
         <ScrollToTop />
         <LayoutWrapper>
           <Routes>
@@ -68,6 +83,7 @@ function App() {
             {/* Auth Routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path='/forgot' element={<ForgotPassword/>} />
             
             {/* User & Checkout Routes */}
             <Route path="/cart" element={<Cart />} />

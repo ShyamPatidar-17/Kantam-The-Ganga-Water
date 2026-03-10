@@ -1,4 +1,6 @@
-// User schema
+// ! ||--------------------------------------------------------------------------------||
+// ! ||                                   User Schema                                  ||
+// ! ||--------------------------------------------------------------------------------||
 import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema({
@@ -11,24 +13,33 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
-    lowercase: true
+    lowercase: true,
+    trim: true
   },
   password: {
     type: String,
     required: true,
   },
-  role:{
+  phone: {
     type: String,
     required: true,
-    enum:['User','Admin','Seller']
   },
-   phone: {
+  role: { 
+    type: String, 
+    enum: ['User', 'Admin', 'Seller'], 
+    default: 'User' 
+  },
+  // Systematic Address Block
+  address: {
+    street: { type: String, default: "" },
+    city: { type: String, default: "" },
+    state: { type: String, default: "" },
+    zip: { type: String, default: "" },
+    country: { type: String, default: "India" }
+  },
+  otp:{
     type:String,
-    required:true,
-   },
-
-  role: { type: String, default: 'User' },
-  
+  }
 }, { timestamps: true });
 
 const User = mongoose.model('User', userSchema);

@@ -1,4 +1,6 @@
-// Product schema
+// ! ||--------------------------------------------------------------------------------||
+// ! ||                                // Product schema                               ||
+// ! ||--------------------------------------------------------------------------------||
 import mongoose from 'mongoose';
 
 const bottleSchema = new mongoose.Schema({
@@ -9,7 +11,7 @@ const bottleSchema = new mongoose.Schema({
   },
   sellerId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Seller',
+    ref: 'User',    
     required: [true, 'A seller reference is mandatory']
   },
   size: {

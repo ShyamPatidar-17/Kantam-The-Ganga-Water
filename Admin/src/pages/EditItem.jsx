@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { API_URL } from '../App';
 import toast from 'react-hot-toast';
-import { Save, ArrowLeft, UploadCloud, X, Loader2, Package, Database } from 'lucide-react';
+import { Save, ArrowLeft, UploadCloud, X, Loader2 } from 'lucide-react';
+
+import {fetchProductById,updateProduct} from '../api/index'; // Import everything from your API file
 
 const EditItem = () => {
     const { id } = useParams();
@@ -11,23 +11,16 @@ const EditItem = () => {
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     
-    // imageFiles stores the actual File objects for new uploads
     const [imageFiles, setImageFiles] = useState([null, null, null, null]); 
-    // previews stores the URLs (either Cloudinary HTTPS or local blob: URLs)
     const [previews, setPreviews] = useState(["", "", "", ""]);
-
     const [formData, setFormData] = useState({
-        name: '',
-        price: '',
-        size: '',
-        stock: '',
-        description: ''
+        name: '', price: '', size: '1ltr', stock: '', description: ''
     });
 
     useEffect(() => {
-        const fetchProduct = async () => {
+        const loadInitialData = async () => {
             try {
-                const { data } = await axios.get(`${API_URL}/products/particular/${id}`);
+                const { data } = await fetchProductById(id);
                 setFormData({
                     name: data.name || '',
                     price: data.price || '',
@@ -47,24 +40,19 @@ const EditItem = () => {
                 setLoading(false);
             }
         };
-        fetchProduct();
+        loadInitialData();
     }, [id]);
 
     const handleImageChange = (index, file) => {
         if (!file) return;
-
-        // 1. Update File state for the specific slot
         const updatedFiles = [...imageFiles];
         updatedFiles[index] = file;
         setImageFiles(updatedFiles);
 
-        // 2. Update Preview state (Blob URL for local preview)
         const updatedPreviews = [...previews];
-        const objectUrl = URL.createObjectURL(file);
-        updatedPreviews[index] = objectUrl;
+        if (previews[index]?.startsWith('blob:')) URL.revokeObjectURL(previews[index]);
+        updatedPreviews[index] = URL.createObjectURL(file);
         setPreviews(updatedPreviews);
-
-        // Cleanup: Ideally revoke old blob URLs here to save memory
     };
 
     const clearSlot = (index) => {
@@ -72,6 +60,7 @@ const EditItem = () => {
         updatedFiles[index] = null;
         setImageFiles(updatedFiles);
 
+        if (previews[index]?.startsWith('blob:')) URL.revokeObjectURL(previews[index]);
         const updatedPreviews = [...previews];
         updatedPreviews[index] = "";
         setPreviews(updatedPreviews);
@@ -81,29 +70,17 @@ const EditItem = () => {
         e.preventDefault();
         setSubmitting(true);
 
-        const data = new FormData();
+        const submissionData = new FormData();
+        Object.keys(formData).forEach(key => submissionData.append(key, formData[key]));
         
-        // Append text fields
-        Object.keys(formData).forEach(key => data.append(key, formData[key]));
-        
-        // Filter out Cloudinary URLs we want to keep
         const keptImages = previews.filter(url => url && url.startsWith('http'));
-        data.append('existingImages', JSON.stringify(keptImages));
+        submissionData.append('existingImages', JSON.stringify(keptImages));
 
-        // Append new files to the same 'images' key the backend expects
-        imageFiles.forEach((file) => {
-            if (file) data.append('images', file);
-        });
+        imageFiles.forEach(file => { if (file) submissionData.append('images', file); });
 
         try {
-            const token = localStorage.getItem('token');
-            await axios.put(`${API_URL}/products/${id}`, data, {
-                headers: { 
-                    'Content-Type': 'multipart/form-data',
-                    Authorization: `Bearer ${token}` 
-                }
-            });
-            toast.success("Product and assets updated successfully");
+            await updateProduct(id, submissionData);
+            toast.success("Inventory synchronized successfully");
             navigate(-1);
         } catch (err) {
             toast.error(err.response?.data?.message || "Update failed");
@@ -115,7 +92,7 @@ const EditItem = () => {
     if (loading) return (
         <div className="flex flex-col items-center justify-center min-h-screen text-slate-300">
             <Loader2 className="animate-spin mb-4" size={40} />
-            <p className="font-black uppercase tracking-[0.3em] text-xs">Synchronizing Source...</p>
+            <p className="font-black uppercase tracking-[0.3em] text-xs">Accessing Data Stream...</p>
         </div>
     );
 
@@ -127,26 +104,23 @@ const EditItem = () => {
             </button>
 
             <form onSubmit={handleSubmit} className="bg-white p-8 md:p-12 rounded-[3.5rem] border border-slate-100 shadow-2xl space-y-10">
+                {/* Header */}
                 <div>
                     <h2 className="text-4xl font-black uppercase tracking-tighter text-brand-primary">
                         Edit <span className="text-brand-accent italic font-light">Inventory</span>
                     </h2>
-                    <p className="text-slate-300 text-[10px] font-bold mt-2 uppercase tracking-widest">Update specs and cloud assets for vessel {id}</p>
+                    <p className="text-slate-300 text-[10px] font-bold mt-2 uppercase tracking-widest">Vessel ID: {id}</p>
                 </div>
 
-                {/* --- Multi-Image Asset Manager --- */}
+                {/* Multi-Image Asset Manager */}
                 <div className="space-y-4">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Cloud Asset Slots (Max 4)</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Cloud Asset Slots</label>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {[0, 1, 2, 3].map((index) => (
                             <div key={index} className="relative aspect-square rounded-[2rem] border-2 border-dashed border-slate-100 bg-slate-50 overflow-hidden group">
                                 {previews[index] ? (
                                     <>
-                                        <img 
-                                            src={previews[index]} 
-                                            alt="Preview" 
-                                            className="w-full h-full object-contain p-4 transition-transform group-hover:scale-105"
-                                        />
+                                        <img src={previews[index]} alt="Preview" className="w-full h-full object-contain p-4 transition-transform group-hover:scale-105" />
                                         <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
                                             <label className="bg-white text-slate-900 px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest cursor-pointer hover:bg-brand-accent transition-colors">
                                                 Change
@@ -164,65 +138,34 @@ const EditItem = () => {
                                         <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageChange(index, e.target.files[0])} />
                                     </label>
                                 )}
-                                <div className="absolute top-3 left-3 w-5 h-5 bg-white rounded-lg flex items-center justify-center text-[9px] font-black text-slate-300 shadow-sm border border-slate-50">
-                                    {index + 1}
-                                </div>
                             </div>
                         ))}
                     </div>
                 </div>
 
-                {/* --- Product Specs --- */}
+                {/* Form Fields */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-2 col-span-full">
                         <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Vessel Name</label>
-                        <input 
-                            className="w-full p-5 bg-slate-50 rounded-[1.5rem] outline-none focus:ring-2 focus:ring-brand-accent transition-all font-bold text-slate-700"
-                            value={formData.name}
-                            onChange={(e) => setFormData({...formData, name: e.target.value})}
-                            required
-                        />
+                        <input className="w-full p-5 bg-slate-50 rounded-[1.5rem] outline-none focus:ring-2 focus:ring-brand-accent transition-all font-bold text-slate-700" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} required />
                     </div>
-
                     <div className="space-y-2">
                         <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Retail Price (₹)</label>
-                        <input 
-                            type="number"
-                            className="w-full p-5 bg-slate-50 rounded-[1.5rem] outline-none font-bold text-slate-700"
-                            value={formData.price}
-                            onChange={(e) => setFormData({...formData, price: e.target.value})}
-                            required
-                        />
+                        <input type="number" className="w-full p-5 bg-slate-50 rounded-[1.5rem] outline-none font-bold text-slate-700" value={formData.price} onChange={(e) => setFormData({...formData, price: e.target.value})} required />
                     </div>
-
                     <div className="space-y-2">
                         <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Stock Level</label>
-                        <input 
-                            type="number"
-                            className="w-full p-5 bg-slate-50 rounded-[1.5rem] outline-none font-bold text-slate-700"
-                            value={formData.stock}
-                            onChange={(e) => setFormData({...formData, stock: e.target.value})}
-                            required
-                        />
+                        <input type="number" className="w-full p-5 bg-slate-50 rounded-[1.5rem] outline-none font-bold text-slate-700" value={formData.stock} onChange={(e) => setFormData({...formData, stock: e.target.value})} required />
                     </div>
-
                     <div className="space-y-2 col-span-full">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Source Description</label>
-                        <textarea 
-                            className="w-full p-5 bg-slate-50 rounded-[1.5rem] outline-none h-32 font-medium text-slate-600 resize-none"
-                            value={formData.description}
-                            onChange={(e) => setFormData({...formData, description: e.target.value})}
-                        />
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Description</label>
+                        <textarea className="w-full p-5 bg-slate-50 rounded-[1.5rem] outline-none font-medium text-slate-700 min-h-[120px] resize-none" value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} />
                     </div>
                 </div>
 
-                <button 
-                    disabled={submitting}
-                    type="submit" 
-                    className="w-full bg-slate-900 text-white py-6 rounded-[2rem] font-black uppercase tracking-[0.3em] text-xs hover:bg-brand-accent hover:text-brand-primary transition-all flex items-center justify-center gap-3 shadow-xl active:scale-[0.98] disabled:opacity-50"
-                >
+                <button disabled={submitting} type="submit" className="w-full bg-slate-900 text-white py-6 rounded-[2rem] font-black uppercase tracking-[0.3em] text-xs hover:bg-brand-accent hover:text-brand-primary transition-all flex items-center justify-center gap-3 shadow-xl disabled:opacity-50">
                     {submitting ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
-                    {submitting ? "UPLOADING TO SOURCE..." : "SYNC CHANGES"}
+                    {submitting ? "UPLOADING..." : "SYNC CHANGES"}
                 </button>
             </form>
         </div>
